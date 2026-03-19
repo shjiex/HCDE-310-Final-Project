@@ -18,6 +18,8 @@ from .google_services import (
 
 load_dotenv()
 
+ANALYSIS_BATCH_SIZE = 50
+
 
 def create_app():
     project_root = Path(__file__).resolve().parent.parent
@@ -37,10 +39,13 @@ def create_app():
     def index():
         mode = request.values.get("mode", "demo")
         query = request.values.get("query", "newer_than:21d")
+        per_page = request.values.get("per_page", "10")
+        analysis_started = request.method == "POST"
         messages = get_demo_messages()
-        source_label = "Demo dataset"
         google_ready = credentials_configured(app.config["CLIENT_SECRETS_FILE"])
         google_connected = bool(load_credentials(app.instance_path, app.config["TOKEN_FILE"]))
+
+        has_more = False
 
         if request.method == "POST" and mode == "live":
             if not google_connected:
@@ -49,12 +54,13 @@ def create_app():
                 try:
                     creds = load_credentials(app.instance_path, app.config["TOKEN_FILE"])
                     gmail_service = get_gmail_service(creds)
-                    messages = gmail_service.fetch_recent_messages(
+                    messages, next_token = gmail_service.fetch_recent_messages(
                         query=query,
-                        max_results=20,
-                        unread_only=False,
+                        max_results=ANALYSIS_BATCH_SIZE,
                     )
-                    source_label = "Live Gmail inbox"
+                    session["next_page_token"] = next_token
+                    session["last_query"] = query
+                    has_more = bool(next_token)
                 except GoogleApiError as exc:
                     flash(str(exc), "error")
 
@@ -63,11 +69,35 @@ def create_app():
         return render_template(
             "index.html",
             emails=analyzed,
-            prefs={"mode": mode, "query": query},
-            source_label=source_label,
+            prefs={"mode": mode, "query": query, "per_page": per_page},
             google_ready=google_ready,
             google_connected=google_connected,
+            analysis_started=analysis_started,
+            has_more=has_more,
         )
+
+    @app.route("/load-more", methods=["POST"])
+    def load_more():
+        page_token = session.get("next_page_token")
+        if not page_token:
+            return jsonify(ok=False, error="No more emails"), 400
+        creds = load_credentials(app.instance_path, app.config["TOKEN_FILE"])
+        if not creds:
+            return jsonify(ok=False, error="Not connected"), 401
+        try:
+            query = session.get("last_query", "newer_than:21d")
+            gmail_service = get_gmail_service(creds)
+            messages, next_token = gmail_service.fetch_recent_messages(
+                query=query,
+                max_results=ANALYSIS_BATCH_SIZE,
+                page_token=page_token,
+            )
+            session["next_page_token"] = next_token
+            analyzed = analyze_messages(messages)
+            html = render_template("_email_cards.html", emails=analyzed)
+            return jsonify(ok=True, html=html, has_more=bool(next_token))
+        except GoogleApiError as exc:
+            return jsonify(ok=False, error=str(exc)), 500
 
     @app.route("/email/<message_id>/star", methods=["POST"])
     def star_email(message_id):
@@ -83,6 +113,20 @@ def create_app():
         except GoogleApiError as exc:
             return jsonify(ok=False, error=str(exc)), 500
 
+    @app.route("/email/<message_id>/read", methods=["POST"])
+    def read_email(message_id):
+        if message_id.startswith("demo-"):
+            return jsonify(ok=True)
+        creds = load_credentials(app.instance_path, app.config["TOKEN_FILE"])
+        if not creds:
+            return jsonify(ok=False, error="Not connected"), 401
+        try:
+            read = request.json.get("read", True)
+            get_gmail_service(creds).mark_read(message_id, read)
+            return jsonify(ok=True)
+        except GoogleApiError as exc:
+            return jsonify(ok=False, error=str(exc)), 500
+
     @app.route("/email/<message_id>/trash", methods=["POST"])
     def trash_email(message_id):
         if message_id.startswith("demo-"):
@@ -92,6 +136,19 @@ def create_app():
             return jsonify(ok=False, error="Not connected"), 401
         try:
             get_gmail_service(creds).trash_message(message_id)
+            return jsonify(ok=True)
+        except GoogleApiError as exc:
+            return jsonify(ok=False, error=str(exc)), 500
+
+    @app.route("/email/<message_id>/untrash", methods=["POST"])
+    def untrash_email(message_id):
+        if message_id.startswith("demo-"):
+            return jsonify(ok=True)
+        creds = load_credentials(app.instance_path, app.config["TOKEN_FILE"])
+        if not creds:
+            return jsonify(ok=False, error="Not connected"), 401
+        try:
+            get_gmail_service(creds).untrash_message(message_id)
             return jsonify(ok=True)
         except GoogleApiError as exc:
             return jsonify(ok=False, error=str(exc)), 500
@@ -136,7 +193,7 @@ def create_app():
             return redirect(url_for("index"))
 
         save_credentials(app.instance_path, app.config["TOKEN_FILE"], creds)
-        flash("Google account connected! Set source as live Gmail and click ANALYZE INBOX to see your email.", "success")
-        return redirect(url_for("index", mode="live"))
+        flash("Google account connected! Choose demo data or live Gmail, then click ANALYZE INBOX.", "success")
+        return redirect(url_for("index"))
 
     return app

@@ -7,7 +7,6 @@ from google_auth_oauthlib.flow import Flow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 
-# The Gmail permissions this app needs (read-only)
 SCOPES = ["https://www.googleapis.com/auth/gmail.modify"]
 
 
@@ -47,7 +46,6 @@ def start_oauth_flow(client_secrets_file, redirect_uri):
         )
         auth_url, state = flow.authorization_url(
             access_type="offline",
-            include_granted_scopes="true",
             prompt="consent",
         )
         return flow, auth_url, state, flow.code_verifier
@@ -89,29 +87,40 @@ class GmailClient:
         except HttpError as exc:
             raise GoogleApiError(f"Failed to update star: {exc}") from exc
 
+    def mark_read(self, message_id, read):
+        labels_to_add = [] if read else ["UNREAD"]
+        labels_to_remove = ["UNREAD"] if read else []
+        try:
+            self.service.users().messages().modify(
+                userId="me",
+                id=message_id,
+                body={"addLabelIds": labels_to_add, "removeLabelIds": labels_to_remove},
+            ).execute()
+        except HttpError as exc:
+            raise GoogleApiError(f"Failed to update read status: {exc}") from exc
+
     def trash_message(self, message_id):
         try:
             self.service.users().messages().trash(userId="me", id=message_id).execute()
         except HttpError as exc:
             raise GoogleApiError(f"Failed to trash message: {exc}") from exc
 
-    def fetch_recent_messages(self, query, max_results, unread_only=False):
-        gmail_query = query.strip()
-        if unread_only:
-            gmail_query = f"{gmail_query} is:unread".strip()
-
+    def untrash_message(self, message_id):
         try:
-            response = (
-                self.service.users()
-                .messages()
-                .list(userId="me", q=gmail_query, maxResults=max_results)
-                .execute()
-            )
-            message_refs = response.get("messages", [])
-            messages = []
-            for ref in message_refs:
-                messages.append(get_message_details(self.service, ref["id"]))
-            return messages
+            self.service.users().messages().untrash(userId="me", id=message_id).execute()
+        except HttpError as exc:
+            raise GoogleApiError(f"Failed to untrash message: {exc}") from exc
+
+    def fetch_recent_messages(self, query, max_results=100, page_token=None):
+        try:
+            kwargs = {"userId": "me", "q": query.strip(), "maxResults": min(max_results, 500)}
+            if page_token:
+                kwargs["pageToken"] = page_token
+            response = self.service.users().messages().list(**kwargs).execute()
+            refs = response.get("messages", [])
+            next_token = response.get("nextPageToken")
+            messages = [get_message_details(self.service, ref["id"]) for ref in refs]
+            return messages, next_token
         except HttpError as exc:
             raise GoogleApiError(f"Failed to fetch Gmail messages: {exc}") from exc
 
@@ -123,9 +132,7 @@ def get_message_details(service, message_id):
         .get(userId="me", id=message_id, format="full")
         .execute()
     )
-    headers = {}
-    for header in payload.get("payload", {}).get("headers", []):
-        headers[header["name"]] = header["value"]
+    headers = {h["name"]: h["value"] for h in payload.get("payload", {}).get("headers", [])}
 
     return {
         "id": payload["id"],

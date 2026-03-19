@@ -1,31 +1,41 @@
 import re
-from datetime import datetime
+from datetime import datetime, timedelta
 from email.utils import parseaddr
 
 from dateparser.search import search_dates
 
 
-# Maps category names to keyword patterns that match them
 CATEGORY_RULES = {
-    "academics": [r"uw\.edu", r"class", r"lecture", r"assignment", r"advising", r"office hours"],
-    "career": [r"recruit", r"interview", r"career", r"resume", r"apply", r"linkedin", r"offer letter", r"internship"],
-    "club logistics": [r"club", r"meeting", r"rsvp", r"volunteer", r"officers@", r"event"],
+    "academics": [
+        r"uw\.edu", r"washington\.edu", r"instructure", r"canvas",
+        r"class", r"lecture", r"assignment", r"advising", r"office hours",
+        r"hcde", r"graded", r"grade", r"course", r"quarter", r"scholarship",
+        r"research symposium", r"honor society",
+    ],
+    "career": [
+        r"recruit", r"interview", r"career", r"resume", r"linkedin",
+        r"offer letter", r"internship", r"job", r"posted a role",
+        r"handshake", r"joinhandshake", r"hiring",
+    ],
+    "club logistics": [r"club", r"meeting", r"rsvp", r"volunteer", r"officers@", r"chapter"],
     "finance": [r"bill", r"payment", r"tuition", r"invoice", r"fee", r"financial"],
     "personal": [r"family", r"friend", r"personal", r"birthday"],
-    "promotions": [r"deal", r"sale", r"discount", r"newsletter", r"promo"],
+    "promotions": [r"deal", r"sale", r"discount", r"newsletter", r"promo", r"unsubscribe"],
 }
 
-# Maps suggested actions to keyword patterns that trigger them
+# Maps suggested actions to keyword patterns that trigger them.
+# Order matters: first match wins. "save" is before "submit" so that
+# Canvas "Submission Posted" notifications are not mistaken for tasks.
 ACTION_RULES = {
     "reply": [r"reply", r"respond", r"rsvp", r"confirm", r"sign"],
-    "attend": [r"schedule", r"time slot", r"availability", r"meeting"],
+    "attend": [r"schedule", r"time slot", r"availability", r"meeting", r"info session", r"join us"],
     "pay": [r"pay", r"payment", r"invoice", r"bill"],
-    "submit": [r"form", r"survey", r"submit", r"registration"],
-    "save": [r"reference", r"notes", r"attached", r"for your records"],
-    "ignore": [r"sale", r"discount", r"newsletter", r"promo"],
+    "save": [r"submission posted", r"grade changes", r"graded", r"grade", r"reference", r"notes", r"attached", r"for your records"],
+    "submit": [r"form", r"survey", r"submit", r"registration", r"register", r"apply", r"deadline", r"application"],
+    "ignore": [r"sale", r"discount", r"newsletter", r"promo", r"unsubscribe"],
 }
 
-KNOWN_SENDER_MARKERS = ["uw.edu", "bigtech.com", "billing", "advising", "recruiting"]
+KNOWN_SENDER_MARKERS = ["uw.edu", "washington.edu", "instructure.com", "billing", "advising", "recruiting"]
 
 
 def analyze_messages(messages):
@@ -33,7 +43,6 @@ def analyze_messages(messages):
     now = datetime.now()
 
     for message in messages:
-        # Combine all text fields into one string for pattern matching
         text_blob = build_search_text(message)
 
         category = classify_category(text_blob)
@@ -124,22 +133,20 @@ def calculate_score(message, category, suggested_action, detected_dates, now):
     return score, reasons
 
 
-def classify_category(text):
+def _match_rules(text, rules, default):
     lowered = text.lower()
-    for category, patterns in CATEGORY_RULES.items():
-        for pattern in patterns:
-            if re.search(pattern, lowered):
-                return category
-    return "personal"
+    for key, patterns in rules.items():
+        if any(re.search(p, lowered) for p in patterns):
+            return key
+    return default
+
+
+def classify_category(text):
+    return _match_rules(text, CATEGORY_RULES, "personal")
 
 
 def detect_action(text):
-    lowered = text.lower()
-    for action, patterns in ACTION_RULES.items():
-        for pattern in patterns:
-            if re.search(pattern, lowered):
-                return action
-    return "save"
+    return _match_rules(text, ACTION_RULES, "save")
 
 
 def is_known_sender(sender):
@@ -153,27 +160,36 @@ def _format_date_label(dt):
     return dt.strftime("%a, %b %d at %I:%M %p")
 
 
-def extract_dates(text):
+def extract_dates(text, now=None):
+    if now is None:
+        now = datetime.now()
+
     matches = search_dates(
         text,
         settings={
             "PREFER_DATES_FROM": "future",
             "RETURN_AS_TIMEZONE_AWARE": False,
+            "RELATIVE_BASE": now,
         },
         languages=["en"],
     )
     if not matches:
         return []
 
-    # Deduplicate: round to the minute and skip anything before the year 2000
+    one_year_out = now.replace(year=now.year + 1)
+
     seen = set()
     cleaned = []
+    tomorrow = (now + timedelta(days=1)).date()
+
     for _, date_value in matches:
-        if date_value.year < 2000:
+        # Skip same-day times and past/far-future dates
+        if date_value.date() < tomorrow or date_value > one_year_out:
             continue
         normalized = date_value.replace(second=0, microsecond=0)
         key = normalized.isoformat()
         if key not in seen:
             cleaned.append(normalized)
             seen.add(key)
-    return cleaned
+
+    return sorted(cleaned)

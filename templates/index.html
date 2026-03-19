@@ -1,5 +1,15 @@
 {% extends "base.html" %}
 
+{% macro google_icon() %}
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18" height="18">
+  <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/>
+  <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+  <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+  <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+  <path fill="none" d="M0 0h48v48H0z"/>
+</svg>
+{% endmacro %}
+
 {% block content %}
   <header class="site-header">
     <h1>Mail Assistant</h1>
@@ -24,24 +34,12 @@
         {% endwith %}
         {% if google_connected %}
           <a class="google-button google-button--signout" href="{{ url_for('disconnect_google') }}">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18" height="18">
-              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/>
-              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-              <path fill="none" d="M0 0h48v48H0z"/>
-            </svg>
+            {{ google_icon() }}
             Sign out of Google
           </a>
         {% else %}
           <a class="google-button" href="{{ url_for('connect_google') }}">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18" height="18">
-              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/>
-              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-              <path fill="none" d="M0 0h48v48H0z"/>
-            </svg>
+            {{ google_icon() }}
             Sign in with Google
           </a>
         {% endif %}
@@ -57,7 +55,8 @@
         </label>
         <label>
           <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Filter</span>
-          <select name="query">
+          <select id="filter-select">
+            <option value="in:inbox" {% if prefs.query == "in:inbox" %}selected{% endif %}>All</option>
             <option value="newer_than:7d" {% if prefs.query == "newer_than:7d" %}selected{% endif %}>Past week</option>
             <option value="newer_than:21d" {% if prefs.query == "newer_than:21d" %}selected{% endif %}>Past 3 weeks</option>
             <option value="is:unread" {% if prefs.query == "is:unread" %}selected{% endif %}>Unread</option>
@@ -67,16 +66,18 @@
         </label>
         <label>
           <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="9" y2="18"/></svg>Sort</span>
-          <select id="sort-order">
+          <select id="sort-order" {% if not analysis_started %}disabled{% endif %}>
             <option value="score-desc">Priority: high → low</option>
             <option value="score-asc">Priority: low → high</option>
+            <option value="received-desc">Inbox: newest first</option>
+            <option value="received-asc">Inbox: oldest first</option>
             <option value="date-asc">Date: soonest first</option>
             <option value="date-desc">Date: latest first</option>
           </select>
         </label>
         <label>
           <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Tag</span>
-          <select id="tag-filter">
+          <select id="tag-filter" {% if not analysis_started %}disabled{% endif %}>
             <option value="">All</option>
             <optgroup label="Action">
               <option value="reply">Reply</option>
@@ -96,6 +97,46 @@
             </optgroup>
           </select>
         </label>
+        <label>
+          <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>Sender</span>
+          <select id="known-filter" {% if not analysis_started %}disabled{% endif %}>
+            <option value="">All</option>
+            <option value="known">Known</option>
+            <option value="unknown">Unknown</option>
+          </select>
+        </label>
+        <label>
+          <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="21" x2="4" y2="14"/><line x1="4" y1="11" x2="4" y2="3"/><line x1="12" y1="21" x2="12" y2="12"/><line x1="12" y1="9" x2="12" y2="3"/><line x1="20" y1="21" x2="20" y2="16"/><line x1="20" y1="13" x2="20" y2="3"/><line x1="1" y1="14" x2="7" y2="14"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="17" y1="16" x2="23" y2="16"/></svg>Score</span>
+          <div class="score-range-wrap" id="score-range-wrap">
+            <div class="score-range-track" id="score-range-track"></div>
+            <input type="range" id="score-min" class="score-range-input" min="1" max="10" value="1" step="1">
+            <input type="range" id="score-max" class="score-range-input" min="1" max="10" value="10" step="1">
+            <span class="score-range-label" id="score-min-val">1</span>
+            <span class="score-range-label" id="score-max-val">10</span>
+          </div>
+        </label>
+        <label>
+          <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>Per page</span>
+          <select id="per-page" name="per_page">
+            <option value="10" {% if prefs.per_page == "10" %}selected{% endif %}>10</option>
+            <option value="25" {% if prefs.per_page == "25" %}selected{% endif %}>25</option>
+            <option value="50" {% if prefs.per_page == "50" %}selected{% endif %}>50</option>
+            <option value="0"  {% if prefs.per_page == "0"  %}selected{% endif %}>All</option>
+          </select>
+        </label>
+      </div>
+      <div class="query-row">
+        <label for="custom-query">
+          <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="4" y1="6" x2="20" y2="6"/><line x1="8" y1="12" x2="20" y2="12"/><line x1="12" y1="18" x2="20" y2="18"/></svg>Custom</span>
+        </label>
+        <input
+          type="text"
+          id="custom-query"
+          placeholder='e.g. from:i@uw.edu'
+          autocomplete="off"
+          spellcheck="false"
+        >
+        <input type="hidden" name="query" id="query-hidden" value="{{ prefs.query }}">
       </div>
       <div class="button-row">
         <button class="primary-button" type="submit">
@@ -106,87 +147,225 @@
     </form>
     <div class="panel-divider"></div>
     <section class="results-panel">
-      <div class="loading-spinner" id="loading-spinner"></div>
-      {% for email in emails %}
-        <article class="email-card" data-score="{{ email.priority_score }}" data-date="{{ email.detected_dates[0] if email.detected_dates else '' }}" data-id="{{ email.id }}">
-          <div class="email-card-inner">
-            <div class="badge-row">
-              <span class="badge badge-score score-{{ email.priority_score }}">{{ email.priority_score }}</span>
-              <span class="badge badge-action">{{ email.suggested_action }}</span>
-              <span class="badge badge-category">{{ email.category }}</span>
-              {% if email.detected_date_label != "No date detected" %}
-                <span class="badge badge-date">{{ email.detected_date_label }}</span>
-              {% endif %}
-              {% if "known sender" in email.explanations %}
-                <span class="badge badge-known">known sender</span>
-              {% endif %}
-              {% if "unread" in email.explanations %}
-                <span class="badge badge-unread">unread</span>
-              {% endif %}
-            </div>
-            <div class="email-card-row">
-              <div class="email-actions">
-                <button class="action-btn star-btn{% if 'STARRED' in email.label_ids %} starred{% endif %}" title="Star">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
-                </button>
-                <button class="action-btn trash-btn" title="Trash">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
-                </button>
-                <a class="action-btn thread-btn" href="{{ email.thread_url }}" target="_blank" rel="noopener" title="Open in Gmail">
-                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                </a>
-              </div>
-              <p class="sender">{{ email.sender_name }}</p>
-              <div class="email-card-body">
-                <div class="email-content-row">
-                  <p class="email-subject">{{ email.subject }}</p>
-                  <span class="email-sep">·</span>
-                  <p class="snippet">{{ email.snippet or email.body[:180] }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </article>
-      {% endfor %}
+      <div class="loading-spinner-wrap" id="loading-spinner" style="display:none">
+        <div class="loading-spinner"></div>
+        <p class="loading-hint" id="loading-hint">Hang tight! Fetching emails may take up to 10 seconds.</p>
+      </div>
+      {% include "_email_cards.html" %}
       <p class="no-emails-message" id="no-emails-message">No emails to show.</p>
+      <div class="results-footer">
+        <div class="pagination-bar" id="pagination-bar"></div>
+        <button id="load-more-btn" class="load-more-btn"{% if not has_more %} style="display:none"{% endif %}>Load next 50 emails</button>
+      </div>
     </section>
   </section>
+  <div class="undo-toast" id="undo-toast" role="status" aria-live="polite">
+    Email deleted.
+    <button class="undo-toast-btn" id="undo-toast-btn">Undo</button>
+  </div>
   <script>
-    document.querySelectorAll('.star-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const card = btn.closest('.email-card');
+    const analysisStarted = {{ 'true' if analysis_started else 'false' }};
+
+    // Gmail query field
+    const filterSelect  = document.getElementById('filter-select');
+    const customQuery   = document.getElementById('custom-query');
+    const queryHidden   = document.getElementById('query-hidden');
+    const presetValues  = Array.from(filterSelect.options).map(o => o.value);
+    const savedQuery    = queryHidden.value;
+
+    if (presetValues.includes(savedQuery)) {
+      filterSelect.value = savedQuery;
+    } else if (savedQuery) {
+      customQuery.value = savedQuery;
+      filterSelect.value = 'in:inbox';
+    }
+
+    filterSelect.addEventListener('change', () => {
+      customQuery.value = '';
+      queryHidden.value = filterSelect.value;
+    });
+
+    customQuery.addEventListener('input', () => {
+      queryHidden.value = customQuery.value.trim() || filterSelect.value;
+    });
+
+    let undoTimer = null;
+    const undoToast = document.getElementById('undo-toast');
+    const undoBtn = document.getElementById('undo-toast-btn');
+
+    function showUndoToast(id, card) {
+      clearTimeout(undoTimer);
+      undoBtn.onclick = async () => {
+        hideUndoToast();
+        const res = await fetch(`/email/${id}/untrash`, { method: 'POST' });
+        if (res.ok) {
+          delete card.dataset.hidden;
+          applyPagination();
+        } else {
+          alert('Failed to undo. The email may already be in trash.');
+        }
+      };
+      undoToast.classList.add('undo-toast--visible');
+      undoTimer = setTimeout(hideUndoToast, 5000);
+    }
+
+    function hideUndoToast() {
+      undoToast.classList.remove('undo-toast--visible');
+      clearTimeout(undoTimer);
+    }
+
+    document.querySelector('.results-panel').addEventListener('click', async (e) => {
+      const starBtn = e.target.closest('.star-btn');
+      const trashBtn = e.target.closest('.trash-btn');
+      if (starBtn) {
+        const card = starBtn.closest('.email-card');
         const id = card.dataset.id;
-        const nowStarred = !btn.classList.contains('starred');
-        btn.classList.toggle('starred', nowStarred);
+        const nowStarred = !starBtn.classList.contains('starred');
+        starBtn.classList.toggle('starred', nowStarred);
         fetch(`/email/${id}/star`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ starred: nowStarred }),
         });
-      });
+      }
+      if (trashBtn) {
+        const card = trashBtn.closest('.email-card');
+        const id = card.dataset.id;
+        const res = await fetch(`/email/${id}/trash`, { method: 'POST' });
+        if (res.ok) {
+          card.dataset.hidden = '1';
+          card.style.display = 'none';
+          applyPagination();
+          showUndoToast(id, card);
+        } else {
+          alert('Failed to trash email. Are you connected to Google?');
+        }
+      }
+      const readBtn = e.target.closest('.read-btn');
+      if (readBtn) {
+        const card = readBtn.closest('.email-card');
+        const id = card.dataset.id;
+        const nowRead = !readBtn.classList.contains('is-read');
+        readBtn.classList.toggle('is-read', nowRead);
+        readBtn.title = nowRead ? 'Mark as unread' : 'Mark as read';
+        card.classList.toggle('email-read', nowRead);
+        fetch(`/email/${id}/read`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ read: nowRead }),
+        });
+      }
     });
 
-    document.querySelectorAll('.trash-btn').forEach(btn => {
-      btn.addEventListener('click', () => {
-        const card = btn.closest('.email-card');
-        const id = card.dataset.id;
-        card.style.display = 'none';
-        fetch(`/email/${id}/trash`, { method: 'POST' });
-        updateEmptyMessage();
-      });
+    const loadMoreBtn = document.getElementById('load-more-btn');
+    loadMoreBtn.addEventListener('click', async () => {
+      loadMoreBtn.disabled = true;
+      loadMoreBtn.textContent = 'Loading…';
+      const res = await fetch('/load-more', { method: 'POST' });
+      const data = await res.json();
+      if (data.ok) {
+        loadMoreBtn.insertAdjacentHTML('beforebegin', data.html);
+        loadMoreBtn.style.display = data.has_more ? '' : 'none';
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.textContent = 'Load next 50 emails';
+        applyPagination();
+      } else {
+        alert(data.error || 'Failed to load more emails.');
+        loadMoreBtn.disabled = false;
+        loadMoreBtn.textContent = 'Load next 50 emails';
+      }
     });
+
+    let currentPage = 1;
+
+    function getVisibleCards() {
+      return Array.from(document.querySelectorAll('.email-card')).filter(c => !c.dataset.hidden);
+    }
 
     function updateEmptyMessage() {
-      const any = Array.from(document.querySelectorAll('.email-card')).some(c => c.style.display !== 'none');
+      const any = getVisibleCards().length > 0;
       document.getElementById('no-emails-message').style.display = any ? 'none' : 'block';
     }
 
-    function filterByTag(tag) {
+    function applyPagination() {
+      const perPage = parseInt(document.getElementById('per-page').value, 10);
+      const visible = getVisibleCards();
+      const total = visible.length;
+      const pages = perPage === 0 ? 1 : Math.ceil(total / perPage);
+      if (currentPage > pages) currentPage = pages || 1;
+
+      let lastVisible = null;
+      visible.forEach((card, i) => {
+        const inPage = perPage === 0 || (i >= (currentPage - 1) * perPage && i < currentPage * perPage);
+        card.style.display = inPage ? '' : 'none';
+        card.classList.remove('email-card--last');
+        if (inPage) lastVisible = card;
+      });
+      if (lastVisible) lastVisible.classList.add('email-card--last');
+
+      renderPagination(pages);
+      updateEmptyMessage();
+    }
+
+    function renderPagination(pages) {
+      const bar = document.getElementById('pagination-bar');
+      bar.innerHTML = '';
+      if (pages <= 1) return;
+
+      const prev = document.createElement('button');
+      prev.className = 'page-btn';
+      prev.textContent = '←';
+      prev.disabled = currentPage === 1;
+      prev.addEventListener('click', () => { currentPage--; applyPagination(); });
+      bar.appendChild(prev);
+
+      for (let i = 1; i <= pages; i++) {
+        const btn = document.createElement('button');
+        btn.className = 'page-btn' + (i === currentPage ? ' page-btn--active' : '');
+        btn.textContent = i;
+        btn.addEventListener('click', () => { currentPage = i; applyPagination(); });
+        bar.appendChild(btn);
+      }
+
+      const next = document.createElement('button');
+      next.className = 'page-btn';
+      next.textContent = '→';
+      next.disabled = currentPage === pages;
+      next.addEventListener('click', () => { currentPage++; applyPagination(); });
+      bar.appendChild(next);
+    }
+
+    function applyFilters() {
+      const tag = tagSelect.value;
+      const known = knownSelect.value;
+      const a = parseInt(scoreMinInput.value, 10);
+      const b = parseInt(scoreMaxInput.value, 10);
+      const scoreMin = Math.min(a, b);
+      const scoreMax = Math.max(a, b);
+
       document.querySelectorAll('.email-card').forEach(card => {
         const tags = Array.from(card.querySelectorAll('.badge')).map(b => b.textContent.trim().toLowerCase());
-        card.style.display = (!tag || tags.includes(tag)) ? '' : 'none';
+        const isKnown = card.dataset.known === '1';
+        const score = parseInt(card.dataset.score, 10);
+
+        const tagOk = !tag || tags.includes(tag);
+        const knownOk = !known || (known === 'known' && isKnown) || (known === 'unknown' && !isKnown);
+        const scoreOk = score >= scoreMin && score <= scoreMax;
+
+        if (tagOk && knownOk && scoreOk) {
+          delete card.dataset.hidden;
+        } else {
+          card.dataset.hidden = '1';
+          card.style.display = 'none';
+        }
       });
-      updateEmptyMessage();
+      currentPage = 1;
+      applyPagination();
+    }
+
+    function parseReceived(ts) {
+      const n = Number(ts);
+      return isNaN(n) ? new Date(ts).getTime() : n;
     }
 
     function sortEmails(order) {
@@ -198,6 +377,10 @@
           const sa = parseInt(a.dataset.score, 10);
           const sb = parseInt(b.dataset.score, 10);
           return order === 'score-asc' ? sa - sb : sb - sa;
+        } else if (order === 'received-asc' || order === 'received-desc') {
+          const ra = a.dataset.received ? parseReceived(a.dataset.received) : Infinity;
+          const rb = b.dataset.received ? parseReceived(b.dataset.received) : Infinity;
+          return order === 'received-asc' ? ra - rb : rb - ra;
         } else {
           const da = a.dataset.date ? new Date(a.dataset.date).getTime() : Infinity;
           const db = b.dataset.date ? new Date(b.dataset.date).getTime() : Infinity;
@@ -205,14 +388,21 @@
         }
       });
       cards.forEach(c => panel.insertBefore(c, noMsg));
+      applyPagination();
     }
 
     function filterEmails(query) {
       const q = query.toLowerCase();
       document.querySelectorAll('.email-card').forEach(card => {
-        card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
+        if (card.textContent.toLowerCase().includes(q)) {
+          delete card.dataset.hidden;
+        } else {
+          card.dataset.hidden = '1';
+          card.style.display = 'none';
+        }
       });
-      updateEmptyMessage();
+      currentPage = 1;
+      applyPagination();
     }
 
     function updateHeaderHeight() {
@@ -221,25 +411,83 @@
     }
 
     updateHeaderHeight();
-    updateEmptyMessage();
     document.fonts.ready.then(updateHeaderHeight);
     window.addEventListener('resize', updateHeaderHeight);
 
     const tagSelect = document.getElementById('tag-filter');
     const sortSelect = document.getElementById('sort-order');
+    const knownSelect = document.getElementById('known-filter');
+    const scoreMinInput = document.getElementById('score-min');
+    const scoreMaxInput = document.getElementById('score-max');
+    const scoreTrack = document.getElementById('score-range-track');
 
-    const savedTag = sessionStorage.getItem('tagFilter') || '';
-    if (savedTag) { tagSelect.value = savedTag; filterByTag(savedTag); }
+    function updateScoreTrack() {
+      const a = parseInt(scoreMinInput.value, 10);
+      const b = parseInt(scoreMaxInput.value, 10);
+      const minVal = Math.min(a, b);
+      const maxVal = Math.max(a, b);
+      const thumbSize = 14;
+      const thumbInset = thumbSize / 2;
+      const wrapWidth = scoreTrack.offsetWidth;
+      const usableWidth = Math.max(wrapWidth - thumbSize, 0);
+      const loPx = thumbInset + ((minVal - 1) / 9) * usableWidth;
+      const hiPx = thumbInset + ((maxVal - 1) / 9) * usableWidth;
+      scoreTrack.style.background = `linear-gradient(to right, rgba(255,255,255,0.28) 0px, rgba(255,255,255,0.28) ${loPx}px, white ${loPx}px, white ${hiPx}px, rgba(255,255,255,0.28) ${hiPx}px, rgba(255,255,255,0.28) ${wrapWidth}px)`;
+      const minLabel = document.getElementById('score-min-val');
+      const maxLabel = document.getElementById('score-max-val');
+      minLabel.textContent = minVal;
+      maxLabel.textContent = maxVal;
+      minLabel.style.left = `${loPx}px`;
+      maxLabel.style.left = `${hiPx}px`;
+      scoreMinInput.style.zIndex = a >= b ? 3 : 2;
+      scoreMaxInput.style.zIndex = a >= b ? 2 : 3;
+    }
 
-    const savedSort = sessionStorage.getItem('sortOrder') || '';
-    if (savedSort) { sortSelect.value = savedSort; sortEmails(savedSort); }
+    scoreMinInput.addEventListener('input', updateScoreTrack);
+    scoreMaxInput.addEventListener('input', updateScoreTrack);
+    window.addEventListener('resize', updateScoreTrack);
+    updateScoreTrack();
+
+    if (analysisStarted) {
+      const savedTag   = sessionStorage.getItem('tagFilter')   || '';
+      const savedKnown = sessionStorage.getItem('knownFilter') || '';
+      const savedMin   = parseInt(sessionStorage.getItem('scoreMin')  || '1',  10);
+      const savedMax   = parseInt(sessionStorage.getItem('scoreMax')  || '10', 10);
+      const savedSort  = sessionStorage.getItem('sortOrder')  || '';
+
+      tagSelect.value     = savedTag;
+      knownSelect.value   = savedKnown;
+      scoreMinInput.value = savedMin;
+      scoreMaxInput.value = savedMax;
+      updateScoreTrack();
+
+      if (savedSort) { sortSelect.value = savedSort; sortEmails(savedSort); }
+      applyFilters();
+    } else {
+      applyPagination();
+    }
+
+    window.addEventListener('pageshow', (e) => {
+      if (e.persisted) document.getElementById('loading-spinner').style.display = 'none';
+    });
 
     document.querySelector('.control-panel').addEventListener('submit', () => {
       sessionStorage.setItem('tagFilter', tagSelect.value);
       sessionStorage.setItem('sortOrder', sortSelect.value);
-      document.getElementById('loading-spinner').style.display = 'block';
+      sessionStorage.setItem('knownFilter', knownSelect.value);
+      const _a = parseInt(scoreMinInput.value, 10);
+      const _b = parseInt(scoreMaxInput.value, 10);
+      sessionStorage.setItem('scoreMin', Math.min(_a, _b));
+      sessionStorage.setItem('scoreMax', Math.max(_a, _b));
+      const spinnerWrap = document.getElementById('loading-spinner');
+      spinnerWrap.style.display = 'flex';
+      setTimeout(() => { document.getElementById('loading-hint').style.opacity = '1'; }, 5000);
       document.querySelectorAll('.email-card').forEach(c => c.style.display = 'none');
       document.getElementById('no-emails-message').style.display = 'none';
+      const demoNotice = document.querySelector('.demo-notice');
+      if (demoNotice) demoNotice.style.display = 'none';
+      document.getElementById('pagination-bar').innerHTML = '';
+      document.querySelector('.results-panel').classList.add('results-panel--loading');
     });
   </script>
 {% endblock %}
