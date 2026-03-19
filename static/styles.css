@@ -213,10 +213,6 @@ h1 {
   gap: 6px;
 }
 
-.control-panel label:has(.score-range-wrap) {
-  gap: 0px;
-}
-
 .control-panel select {
   width: 100%;
   padding: 4px 24px 4px 8px;
@@ -724,7 +720,7 @@ h1 {
   --score-thumb-size: 14px;
   position: relative;
   height: 48px;
-  margin: 0;
+  margin: 4px 0 0;
 }
 
 .score-range-track {
