@@ -1,0 +1,245 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <header class="site-header">
+    <h1>Mail Assistant</h1>
+    <div class="header-divider"></div>
+    <div class="search-bar-wrap">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input class="search-bar" type="text" placeholder="Search emails…" oninput="filterEmails(this.value)">
+    </div>
+  </header>
+  <section class="workspace">
+    <form class="control-panel" method="post">
+      {% if google_ready %}
+      <div class="source-panel">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            <div class="flash-stack">
+              {% for category, message in messages %}
+                <p class="flash flash-{{ category }}">{{ message }}</p>
+              {% endfor %}
+            </div>
+          {% endif %}
+        {% endwith %}
+        {% if google_connected %}
+          <a class="google-button google-button--signout" href="{{ url_for('disconnect_google') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18" height="18">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              <path fill="none" d="M0 0h48v48H0z"/>
+            </svg>
+            Sign out of Google
+          </a>
+        {% else %}
+          <a class="google-button" href="{{ url_for('connect_google') }}">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="18" height="18">
+              <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.08 17.74 9.5 24 9.5z"/>
+              <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+              <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
+              <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.18 1.48-4.97 2.31-8.16 2.31-6.26 0-11.57-3.59-13.46-8.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+              <path fill="none" d="M0 0h48v48H0z"/>
+            </svg>
+            Sign in with Google
+          </a>
+        {% endif %}
+      </div>
+      {% endif %}
+      <div class="controls-row">
+        <label>
+          <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>Source</span>
+          <select name="mode">
+            <option value="demo" {% if prefs.mode == "demo" %}selected{% endif %}>Demo data</option>
+            <option value="live" {% if prefs.mode == "live" %}selected{% endif %}>Live Gmail</option>
+          </select>
+        </label>
+        <label>
+          <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>Filter</span>
+          <select name="query">
+            <option value="newer_than:7d" {% if prefs.query == "newer_than:7d" %}selected{% endif %}>Past week</option>
+            <option value="newer_than:21d" {% if prefs.query == "newer_than:21d" %}selected{% endif %}>Past 3 weeks</option>
+            <option value="is:unread" {% if prefs.query == "is:unread" %}selected{% endif %}>Unread</option>
+            <option value="has:attachment" {% if prefs.query == "has:attachment" %}selected{% endif %}>Has attachment</option>
+            <option value="is:starred" {% if prefs.query == "is:starred" %}selected{% endif %}>Starred</option>
+          </select>
+        </label>
+        <label>
+          <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="15" y2="12"/><line x1="3" y1="18" x2="9" y2="18"/></svg>Sort</span>
+          <select id="sort-order">
+            <option value="score-desc">Priority: high → low</option>
+            <option value="score-asc">Priority: low → high</option>
+            <option value="date-asc">Date: soonest first</option>
+            <option value="date-desc">Date: latest first</option>
+          </select>
+        </label>
+        <label>
+          <span><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M20.59 13.41l-7.17 7.17a2 2 0 01-2.83 0L2 12V2h10l8.59 8.59a2 2 0 010 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>Tag</span>
+          <select id="tag-filter">
+            <option value="">All</option>
+            <optgroup label="Action">
+              <option value="reply">Reply</option>
+              <option value="attend">Attend</option>
+              <option value="pay">Pay</option>
+              <option value="submit">Submit</option>
+              <option value="save">Save</option>
+              <option value="ignore">Ignore</option>
+            </optgroup>
+            <optgroup label="Category">
+              <option value="academics">Academics</option>
+              <option value="career">Career</option>
+              <option value="club logistics">Club logistics</option>
+              <option value="finance">Finance</option>
+              <option value="personal">Personal</option>
+              <option value="promotions">Promotions</option>
+            </optgroup>
+          </select>
+        </label>
+      </div>
+      <div class="button-row">
+        <button class="primary-button" type="submit">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          Analyze inbox
+        </button>
+      </div>
+    </form>
+    <div class="panel-divider"></div>
+    <section class="results-panel">
+      <div class="loading-spinner" id="loading-spinner"></div>
+      {% for email in emails %}
+        <article class="email-card" data-score="{{ email.priority_score }}" data-date="{{ email.detected_dates[0] if email.detected_dates else '' }}" data-id="{{ email.id }}">
+          <div class="email-card-inner">
+            <div class="badge-row">
+              <span class="badge badge-score score-{{ email.priority_score }}">{{ email.priority_score }}</span>
+              <span class="badge badge-action">{{ email.suggested_action }}</span>
+              <span class="badge badge-category">{{ email.category }}</span>
+              {% if email.detected_date_label != "No date detected" %}
+                <span class="badge badge-date">{{ email.detected_date_label }}</span>
+              {% endif %}
+              {% if "known sender" in email.explanations %}
+                <span class="badge badge-known">known sender</span>
+              {% endif %}
+              {% if "unread" in email.explanations %}
+                <span class="badge badge-unread">unread</span>
+              {% endif %}
+            </div>
+            <div class="email-card-row">
+              <div class="email-actions">
+                <button class="action-btn star-btn{% if 'STARRED' in email.label_ids %} starred{% endif %}" title="Star">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </button>
+                <button class="action-btn trash-btn" title="Trash">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
+                </button>
+                <a class="action-btn thread-btn" href="{{ email.thread_url }}" target="_blank" rel="noopener" title="Open in Gmail">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                </a>
+              </div>
+              <p class="sender">{{ email.sender_name }}</p>
+              <div class="email-card-body">
+                <div class="email-content-row">
+                  <p class="email-subject">{{ email.subject }}</p>
+                  <span class="email-sep">·</span>
+                  <p class="snippet">{{ email.snippet or email.body[:180] }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </article>
+      {% endfor %}
+      <p class="no-emails-message" id="no-emails-message">No emails to show.</p>
+    </section>
+  </section>
+  <script>
+    document.querySelectorAll('.star-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.email-card');
+        const id = card.dataset.id;
+        const nowStarred = !btn.classList.contains('starred');
+        btn.classList.toggle('starred', nowStarred);
+        fetch(`/email/${id}/star`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ starred: nowStarred }),
+        });
+      });
+    });
+
+    document.querySelectorAll('.trash-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const card = btn.closest('.email-card');
+        const id = card.dataset.id;
+        card.style.display = 'none';
+        fetch(`/email/${id}/trash`, { method: 'POST' });
+        updateEmptyMessage();
+      });
+    });
+
+    function updateEmptyMessage() {
+      const any = Array.from(document.querySelectorAll('.email-card')).some(c => c.style.display !== 'none');
+      document.getElementById('no-emails-message').style.display = any ? 'none' : 'block';
+    }
+
+    function filterByTag(tag) {
+      document.querySelectorAll('.email-card').forEach(card => {
+        const tags = Array.from(card.querySelectorAll('.badge')).map(b => b.textContent.trim().toLowerCase());
+        card.style.display = (!tag || tags.includes(tag)) ? '' : 'none';
+      });
+      updateEmptyMessage();
+    }
+
+    function sortEmails(order) {
+      const panel = document.querySelector('.results-panel');
+      const noMsg = document.getElementById('no-emails-message');
+      const cards = Array.from(document.querySelectorAll('.email-card'));
+      cards.sort((a, b) => {
+        if (order === 'score-asc' || order === 'score-desc') {
+          const sa = parseInt(a.dataset.score, 10);
+          const sb = parseInt(b.dataset.score, 10);
+          return order === 'score-asc' ? sa - sb : sb - sa;
+        } else {
+          const da = a.dataset.date ? new Date(a.dataset.date).getTime() : Infinity;
+          const db = b.dataset.date ? new Date(b.dataset.date).getTime() : Infinity;
+          return order === 'date-asc' ? da - db : db - da;
+        }
+      });
+      cards.forEach(c => panel.insertBefore(c, noMsg));
+    }
+
+    function filterEmails(query) {
+      const q = query.toLowerCase();
+      document.querySelectorAll('.email-card').forEach(card => {
+        card.style.display = card.textContent.toLowerCase().includes(q) ? '' : 'none';
+      });
+      updateEmptyMessage();
+    }
+
+    function updateHeaderHeight() {
+      const h = document.querySelector('.site-header').offsetHeight;
+      document.documentElement.style.setProperty('--header-height', h + 'px');
+    }
+
+    updateHeaderHeight();
+    updateEmptyMessage();
+    document.fonts.ready.then(updateHeaderHeight);
+    window.addEventListener('resize', updateHeaderHeight);
+
+    const tagSelect = document.getElementById('tag-filter');
+    const sortSelect = document.getElementById('sort-order');
+
+    const savedTag = sessionStorage.getItem('tagFilter') || '';
+    if (savedTag) { tagSelect.value = savedTag; filterByTag(savedTag); }
+
+    const savedSort = sessionStorage.getItem('sortOrder') || '';
+    if (savedSort) { sortSelect.value = savedSort; sortEmails(savedSort); }
+
+    document.querySelector('.control-panel').addEventListener('submit', () => {
+      sessionStorage.setItem('tagFilter', tagSelect.value);
+      sessionStorage.setItem('sortOrder', sortSelect.value);
+      document.getElementById('loading-spinner').style.display = 'block';
+      document.querySelectorAll('.email-card').forEach(c => c.style.display = 'none');
+      document.getElementById('no-emails-message').style.display = 'none';
+    });
+  </script>
+{% endblock %}
