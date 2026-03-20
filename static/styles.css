@@ -27,7 +27,6 @@ body {
   flex-direction: column;
 }
 
-/* Flash messages */
 .flash {
   margin: 0;
   padding: 8px 12px;
@@ -38,7 +37,6 @@ body {
 .flash-error   { background: #fee2e2; color: #991b1b; }
 .flash-warning { background: #fef3c7; color: #92400e; }
 
-/* Header */
 .site-header {
   display: flex;
   align-items: stretch;
@@ -58,10 +56,6 @@ body {
   align-items: center;
   background: var(--accent);
   color: white;
-}
-
-.header-divider {
-  display: none;
 }
 
 .search-bar-wrap {
@@ -110,7 +104,6 @@ h1 {
   text-transform: uppercase;
 }
 
-/* Buttons */
 .primary-button {
   text-decoration: none;
   padding: 8px 12px;
@@ -127,7 +120,6 @@ h1 {
   border: 1px solid var(--accent);
 }
 
-/* Badges */
 .badge {
   display: inline-block;
   padding: 4px 8px;
@@ -138,7 +130,6 @@ h1 {
 
 .badge-known { background: rgba(16, 185, 129, 0.12); color: rgb(4, 120, 87); }
 
-/* Score badge: opacity scales with score 1–10, white text throughout. */
 .badge-score { color: white; }
 .score-1  { background: rgba(var(--accent-rgb), 0.15); }
 .score-2  { background: rgba(var(--accent-rgb), 0.25); }
@@ -168,7 +159,6 @@ h1 {
   color: #a0a0a0;
 }
 
-/* Layout */
 .workspace {
   display: flex;
   gap: 0;
@@ -176,11 +166,6 @@ h1 {
   padding-left: 192px;
 }
 
-.panel-divider {
-  display: none;
-}
-
-/* Control panel */
 .control-panel {
   font-size: 0.875rem;
   color: white;
@@ -189,7 +174,6 @@ h1 {
   gap: 18px;
   padding: 12px 16px;
   width: 192px;
-  margin-left: 0;
   flex-shrink: 0;
   position: fixed;
   top: var(--header-height);
@@ -288,12 +272,10 @@ h1 {
 
 .google-button:hover {
   background: #f8f9fa;
-  border-color: #c6c6c6;
 }
 
 .google-button--signout {
   background: #fafafa;
-  border-color: #e0e0e0;
   color: #888;
 }
 
@@ -306,7 +288,6 @@ h1 {
 
 .google-button--signout:hover {
   background: #f0f0f0;
-  border-color: #ccc;
 }
 
 .button-row {
@@ -330,7 +311,6 @@ h1 {
   border-color: rgba(255,255,255,0.85);
 }
 
-/* Results panel */
 .results-panel {
   flex: 1;
   min-width: 0;
@@ -454,7 +434,6 @@ h1 {
   transition: opacity 0.6s ease;
 }
 
-/* Email cards */
 .email-card {
   padding: 16px 0;
   position: relative;
@@ -593,7 +572,6 @@ h1 {
   white-space: nowrap;
 }
 
-/* Responsive */
 @media (max-width: 960px) {
   .workspace {
     flex-direction: column;
@@ -604,10 +582,6 @@ h1 {
   .results-panel {
     width: 100%;
     padding-left: 0;
-  }
-
-  .panel-divider {
-    display: none;
   }
 
   .control-panel {
@@ -674,7 +648,6 @@ h1 {
   }
 }
 
-/* Undo toast */
 .undo-toast {
   position: fixed;
   top: 16px;
@@ -715,7 +688,6 @@ h1 {
   text-decoration: underline;
 }
 
-/* Score range */
 .score-range-wrap {
   --score-thumb-size: 14px;
   position: relative;
@@ -800,7 +772,6 @@ h1 {
   pointer-events: none;
 }
 
-/* Read/unread button */
 .read-btn {
   color: lightgray;
 }

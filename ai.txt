@@ -1,0 +1,34 @@
+AI Use Statement
+HCDE 310 Final Project — Student Gmail Assistant
+Josh Shih
+
+I used Claude as a coding assistant throughout this project via Claude Code. Below
+is an account of how and where AI assistance was used.
+
+WHAT AI HELPED WITH
+
+- Frontend/UI: The app's HTML, CSS, and JavaScript were assisted with Claude.
+  This includes the control panel layout, email card design, dual-range
+  score slider, pagination, client-side filtering/sorting, and the undo toast for
+  trash actions.
+- Debugging: I described bugs and Claude helped identify and fix them.
+- Demo data: Claude helped me generate demo data to use for testing.
+
+WHAT I DESIGNED AND WROTE MYSELF
+
+- Flask app structure: Scaffolding the app factory pattern, (create_app in
+  __init__.py), OAuth flow setup, and route organization.
+- Google OAuth 2.0 integration: Working through the PKCE OAuth flow,
+  credential loading/saving, and error handling in google_services.py
+- The email analysis logic in email_analyzer.py: category classification rules,
+  urgency signal extraction, priority scoring weights, and action suggestion logic.
+  These reflect my own judgment about what matters to students.
+- All decisions about what features to build, what filters to include, and how
+  the interface should behave.
+
+HOW I USED AI
+
+In this project, I treated Claude as a programming aid. I described what
+I wanted in plain language, reviewed the code it produced, asked follow-up questions
+when I did not understand something, and made my own decisions about what to keep or
+change. I did not use AI to generate the core analysis logic.

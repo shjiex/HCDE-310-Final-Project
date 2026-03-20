@@ -13,7 +13,6 @@
 {% block content %}
   <header class="site-header">
     <h1>Mail Assistant</h1>
-    <div class="header-divider"></div>
     <div class="search-bar-wrap">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
       <input class="search-bar" type="text" placeholder="Search emails…" oninput="filterEmails(this.value)">
@@ -145,7 +144,6 @@
         </button>
       </div>
     </form>
-    <div class="panel-divider"></div>
     <section class="results-panel">
       <div class="loading-spinner-wrap" id="loading-spinner" style="display:none">
         <div class="loading-spinner"></div>
@@ -166,7 +164,6 @@
   <script>
     const analysisStarted = {{ 'true' if analysis_started else 'false' }};
 
-    // Gmail query field
     const filterSelect  = document.getElementById('filter-select');
     const customQuery   = document.getElementById('custom-query');
     const queryHidden   = document.getElementById('query-hidden');
@@ -443,12 +440,16 @@
       scoreMaxInput.style.zIndex = a >= b ? 2 : 3;
     }
 
-    scoreMinInput.addEventListener('input', updateScoreTrack);
-    scoreMaxInput.addEventListener('input', updateScoreTrack);
+    scoreMinInput.addEventListener('input', () => { updateScoreTrack(); if (analysisStarted) applyFilters(); });
+    scoreMaxInput.addEventListener('input', () => { updateScoreTrack(); if (analysisStarted) applyFilters(); });
     window.addEventListener('resize', updateScoreTrack);
     updateScoreTrack();
 
     if (analysisStarted) {
+      tagSelect.addEventListener('change', applyFilters);
+      knownSelect.addEventListener('change', applyFilters);
+      sortSelect.addEventListener('change', () => sortEmails(sortSelect.value));
+      document.getElementById('per-page').addEventListener('change', applyPagination);
       const savedTag   = sessionStorage.getItem('tagFilter')   || '';
       const savedKnown = sessionStorage.getItem('knownFilter') || '';
       const savedMin   = parseInt(sessionStorage.getItem('scoreMin')  || '1',  10);

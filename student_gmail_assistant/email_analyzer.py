@@ -23,9 +23,6 @@ CATEGORY_RULES = {
     "promotions": [r"deal", r"sale", r"discount", r"newsletter", r"promo", r"unsubscribe"],
 }
 
-# Maps suggested actions to keyword patterns that trigger them.
-# Order matters: first match wins. "save" is before "submit" so that
-# Canvas "Submission Posted" notifications are not mistaken for tasks.
 ACTION_RULES = {
     "reply": [r"reply", r"respond", r"rsvp", r"confirm", r"sign"],
     "attend": [r"schedule", r"time slot", r"availability", r"meeting", r"info session", r"join us"],
@@ -71,7 +68,6 @@ def analyze_messages(messages):
 
 
 def build_search_text(message):
-    # Combine subject, sender, snippet, and body into one string for easier matching
     parts = [
         message.get("subject", ""),
         message.get("sender", ""),
@@ -82,21 +78,16 @@ def build_search_text(message):
 
 
 def strip_replies(text):
-    # Remove common quoted reply patterns so old message text doesn't skew analysis
     lines = text.splitlines()
     cleaned = []
     for line in lines:
         stripped = line.strip()
-        # Stop at "On [date] ... wrote:" reply headers
         if re.match(r"On .{10,100} wrote:?$", stripped):
             break
-        # Stop at Outlook-style "From: / Sent: / To:" blocks
         if re.match(r"(From|Sent|To|Subject)\s*:", stripped):
             break
-        # Stop at separator lines like "---- Original Message ----"
         if re.match(r"-{4,}", stripped) or re.match(r"_{4,}", stripped):
             break
-        # Skip lines that are purely quoted (start with >)
         if stripped.startswith(">"):
             continue
         cleaned.append(line)
@@ -118,7 +109,6 @@ def calculate_score(message, category, suggested_action, detected_dates, now):
     if detected_dates:
         next_date = detected_dates[0]
         days_until = max((next_date - now).days, 0)
-        # Closer deadlines get a higher boost (max +3, min +1)
         score += max(3 - min(days_until, 3), 1)
         reasons.append(f"date: {next_date.strftime('%b %d')}")
 
@@ -183,7 +173,6 @@ def extract_dates(text, now=None):
     tomorrow = (now + timedelta(days=1)).date()
 
     for _, date_value in matches:
-        # Skip same-day times and past/far-future dates
         if date_value.date() < tomorrow or date_value > one_year_out:
             continue
         normalized = date_value.replace(second=0, microsecond=0)

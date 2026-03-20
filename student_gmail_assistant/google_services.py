@@ -24,7 +24,6 @@ def load_credentials(instance_path, token_file):
         return None
 
     creds = Credentials.from_authorized_user_file(str(token_path), SCOPES)
-    # If the saved token expired, refresh it automatically
     if creds and creds.expired and creds.refresh_token:
         creds.refresh(Request())
         token_path.write_text(creds.to_json())
@@ -37,7 +36,6 @@ def save_credentials(instance_path, token_file, creds):
 
 
 def start_oauth_flow(client_secrets_file, redirect_uri):
-    """Step 1 of Google login: redirect the user to Google's sign-in page."""
     try:
         flow = Flow.from_client_secrets_file(
             client_secrets_file,
@@ -56,7 +54,6 @@ def start_oauth_flow(client_secrets_file, redirect_uri):
 
 
 def complete_oauth_flow(client_secrets_file, redirect_uri, state, authorization_response, code_verifier=None):
-    """Step 2 of Google login: exchange the code Google sent back for real credentials."""
     try:
         flow = Flow.from_client_secrets_file(
             client_secrets_file,
@@ -148,7 +145,6 @@ def get_message_details(service, message_id):
 
 
 def _extract_body(part):
-    """Recursively pull the plain-text (or HTML) body out of a MIME message part."""
     if not part:
         return ""
 
@@ -165,7 +161,6 @@ def _extract_body(part):
 
 
 def _decode_base64(data):
-    # Gmail encodes email bodies in base64url. Pad it to a multiple of 4, then decode.
     padded = data + "=" * (-len(data) % 4)
     return base64.urlsafe_b64decode(padded).decode("utf-8", errors="ignore")
 
