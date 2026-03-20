@@ -440,16 +440,12 @@
       scoreMaxInput.style.zIndex = a >= b ? 2 : 3;
     }
 
-    scoreMinInput.addEventListener('input', () => { updateScoreTrack(); if (analysisStarted) applyFilters(); });
-    scoreMaxInput.addEventListener('input', () => { updateScoreTrack(); if (analysisStarted) applyFilters(); });
+    scoreMinInput.addEventListener('input', () => { updateScoreTrack(); });
+    scoreMaxInput.addEventListener('input', () => { updateScoreTrack(); });
     window.addEventListener('resize', updateScoreTrack);
     updateScoreTrack();
 
     if (analysisStarted) {
-      tagSelect.addEventListener('change', applyFilters);
-      knownSelect.addEventListener('change', applyFilters);
-      sortSelect.addEventListener('change', () => sortEmails(sortSelect.value));
-      document.getElementById('per-page').addEventListener('change', applyPagination);
       const savedTag   = sessionStorage.getItem('tagFilter')   || '';
       const savedKnown = sessionStorage.getItem('knownFilter') || '';
       const savedMin   = parseInt(sessionStorage.getItem('scoreMin')  || '1',  10);
