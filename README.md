@@ -30,21 +30,7 @@ Python `3.10+` is recommended.
 
    Edit `.env` and replace `FLASK_SECRET_KEY` with a random string.
 
-3. Optional — for live Gmail mode, get a Google OAuth 2.0 credentials file:
-
-   1. Go to [Google Cloud Console](https://console.cloud.google.com/) and create a new project.
-   2. Enable the **Gmail API**: APIs & Services → Enable APIs → search "Gmail API" → Enable.
-   3. Configure the OAuth consent screen: APIs & Services → OAuth consent screen → External → fill in app name and your email.
-   4. Create credentials: APIs & Services → Credentials → Create Credentials → OAuth client ID → Web application.
-   5. Under **Authorized redirect URIs**, add both:
-      - `http://127.0.0.1:5000/oauth2callback`
-      - `http://localhost:5000/oauth2callback`
-   6. Download the JSON file and save it as `credentials.json` in the project root (or set `GOOGLE_OAUTH_CLIENT_SECRETS` in `.env` to a different path).
-   7. Under OAuth consent screen → Test users, add the Google account you want to sign in with.
-
-   **For graders:** `credentials.json` is provided as a Canvas submission comment. The UW grader
-   accounts (`jeanpamn@uw.edu`, `sdg1@uw.edu`) have been added as authorized test users —
-   sign in with either of those accounts to access live Gmail mode.
+3. **For graders:** `credentials.json` is provided as a Canvas submission comment — place it in the project root. Your `jeanpamn@uw.edu` and `sdg1@uw.edu1` accounts have already been added as test users, so no Google Cloud setup is needed. When signing in, Google may show a warning screen ("Google hasn't verified this app"); click **Continue** and grant the requested permissions to proceed.
 
 4. Start the app:
 
@@ -54,7 +40,6 @@ Python `3.10+` is recommended.
 
 5. Open `http://127.0.0.1:5000`.
 
-   The dev server uses `livereload` and will automatically refresh the browser when CSS or templates change.
 
 ## Notes
 
