@@ -261,7 +261,7 @@
       const res = await fetch('/load-more', { method: 'POST' });
       const data = await res.json();
       if (data.ok) {
-        loadMoreBtn.insertAdjacentHTML('beforebegin', data.html);
+        document.querySelector('.results-footer').insertAdjacentHTML('beforebegin', data.html);
         loadMoreBtn.style.display = data.has_more ? '' : 'none';
         loadMoreBtn.disabled = false;
         loadMoreBtn.textContent = 'Load next 50 emails';

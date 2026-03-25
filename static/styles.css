@@ -553,7 +553,12 @@ h1 {
   margin: 0;
   font-size: 0.875rem;
   font-weight: 600;
-  flex-shrink: 0;
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 40%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .email-sep {
